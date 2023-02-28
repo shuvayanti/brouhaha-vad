@@ -5,15 +5,14 @@ import math
 import yaml
 import os
 
-#calculate the number of dimensions per second
+#calculate the number of dimensions( SNR numpy array) per second
 def calculate_dimensions():
     
     filename = open('/scratch2/mlavechin/VoiceTypeClassifierPaper/DATA/BabyTrain_full_resplitted2/test/aclew.test.uem').read().splitlines()[0].split(' ')[0].split('/')[-1]
-    #print(filename)
+
     duration = float(open('/scratch2/mlavechin/VoiceTypeClassifierPaper/DATA/BabyTrain_full_resplitted2/test/aclew.test.uem').read().splitlines()[0].split(' ')[-1])
-    #print(duration)
+
     dimensions = len(np.load(f'/home/sdas/brouhaha-vad/predictions/detailed_snr_labels/{filename}.npy'))
-    #print(dimensions)
 
     return dimensions/duration
 
@@ -32,7 +31,7 @@ def mean_SNR(filename, onset, duration, n_dimension_per_sec):
     # calculate the offset dimension
     offset_dim = onset_dim + n_dim
 
-    return onset_dim, offset_dim, n_dim, np.mean(detailed_snr[onset_dim:offset_dim])
+    return onset_dim, offset_dim, n_dim, np.mean(detailed_snr[onset_dim:offset_dim])       #return the mean SNR from the onset-offset
 
 #function to find and write the SNR of kCHI & CHI clips to csv of VTC annotated audio clips.
 def snr_vtc_labels(n_dimension_per_sec):
@@ -108,7 +107,7 @@ if __name__ == '__main__':
     print(n_dimension_per_sec)
 
     # remove any preexisting files to prevent contamination
-    os.system('rm -r *snr*.csv')
+    os.system('rm -r /home/sdas/brouhaha-vad/analysis/*snr*.csv')
 
     snr_vtc_labels(n_dimension_per_sec)
     snr_gold_labels(n_dimension_per_sec)
