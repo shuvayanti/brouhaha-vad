@@ -26,7 +26,7 @@ conda create -n brouhaha python=3.8
 conda activate brouhaha
 
 # install brouhaha
-pip install .
+pip install -e .
 ```
 
 Depending on the environment you're running the model in, it may be necessary to install libsndfile with the following command:
