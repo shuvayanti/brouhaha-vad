@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --gres=gpu:gtx1080:1
+#SBATCH --exclude=puck5
 #SBATCH --cpus-per-task=10
 #SBATCH --time=10:00:00
 
