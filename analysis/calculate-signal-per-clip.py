@@ -12,7 +12,7 @@ def calculate_dimensions():
 
     duration = float(open('/scratch2/mlavechin/VoiceTypeClassifierPaper/DATA/BabyTrain_full_resplitted2/test/aclew.test.uem').read().splitlines()[0].split(' ')[-1])
 
-    dimensions = len(np.load(f'/home/sdas/brouhaha-vad/predictions/detailed_snr_labels/{filename}.npy'))
+    dimensions = len(np.load(f'../predictions/detailed_snr_labels/{filename}.npy'))
 
     return dimensions/duration
 
@@ -20,7 +20,7 @@ def calculate_dimensions():
 def mean_SNR(filename, onset, duration, n_dimension_per_sec):
 
     # load the SNR file
-    detailed_snr = np.load(f'/home/sdas/brouhaha-vad/predictions/detailed_snr_labels/{filename}.npy')
+    detailed_snr = np.load(f'../predictions/detailed_snr_labels/{filename}.npy')
 
     # calculate the onset dimension of the SNR numpy array
     onset_dim = math.ceil(onset * n_dimension_per_sec)
@@ -36,15 +36,21 @@ def mean_SNR(filename, onset, duration, n_dimension_per_sec):
 #function to find and write the SNR of kCHI & CHI clips to csv of VTC annotated audio clips.
 def snr_vtc_labels(n_dimension_per_sec):
 
+    print('\nCalculating the SNR levels of VTC labelled data\n')
+
     # create files to store SNR of VTC labelled audio clips of kCHI & CHI
-    write_file_kchi = csv.writer(open('vtc-snr-kchi-labels.csv','w',newline = '\n'))
-    write_file_ochi = csv.writer(open('vtc-snr-ochi-labels.csv','w',newline = '\n'))
+    write_file_kchi = csv.writer(open('SNR/vtc-snr-kchi-labels.csv','w',newline = '\n'))
+    write_file_ochi = csv.writer(open('SNR/vtc-snr-ochi-labels.csv','w',newline = '\n'))
+    write_file_mal = csv.writer(open('SNR/vtc-snr-mal-labels.csv','w',newline = '\n'))
+    write_file_fem = csv.writer(open('SNR/vtc-snr-fem-labels.csv','w',newline = '\n'))
 
     write_file_kchi.writerow(['Name', 'VTC label', 'Onset(s)', 'Duration(s)', 'Onset(dimension)', 'Offset(dimension)', 'No. of dimensions', 'Mean SNR'])
     write_file_ochi.writerow(['Name', 'VTC label', 'Onset(s)', 'Duration(s)', 'Onset(dimension)', 'Offset(dimension)', 'No. of dimensions', 'Mean SNR'])
+    write_file_mal.writerow(['Name', 'VTC label', 'Onset(s)', 'Duration(s)', 'Onset(dimension)', 'Offset(dimension)', 'No. of dimensions', 'Mean SNR'])
+    write_file_fem.writerow(['Name', 'VTC label', 'Onset(s)', 'Duration(s)', 'Onset(dimension)', 'Offset(dimension)', 'No. of dimensions', 'Mean SNR'])
 
     # Process the VTC labelled files in the test folder
-    for file in glob.glob('/home/sdas/pyannote-vtc-testing/runs/babytrain_2/apply/*.rttm'):
+    for file in glob.glob('../../pyannote-vtc-testing/runs/babytrain_2/apply/*.rttm'):
         
         lines = open(file).read().splitlines()
 
@@ -54,8 +60,14 @@ def snr_vtc_labels(n_dimension_per_sec):
             filename = line[1].split('/')[-1]
             onset = line[3]
             duration = line[4]
-            
-            if label == 'KCHI':
+            print('Processing file: ',filename)
+            if label == 'MAL':
+                onset_dim, offset_dim, n_dim, mean_snr = mean_SNR(filename , float(onset), float(duration), n_dimension_per_sec)
+                write_file_mal.writerow([filename, label, onset, duration, onset_dim, offset_dim, n_dim, mean_snr])
+            elif label == 'FEM':
+                onset_dim, offset_dim, n_dim, mean_snr = mean_SNR(filename , float(onset), float(duration), n_dimension_per_sec)
+                write_file_fem.writerow([filename, label, onset, duration, onset_dim, offset_dim, n_dim, mean_snr])
+            elif label == 'KCHI':
                 onset_dim, offset_dim, n_dim, mean_snr = mean_SNR(filename , float(onset), float(duration), n_dimension_per_sec)
                 write_file_kchi.writerow([filename, label, onset, duration, onset_dim, offset_dim, n_dim, mean_snr])
             elif label == 'CHI':
@@ -65,16 +77,22 @@ def snr_vtc_labels(n_dimension_per_sec):
 #function to find and write the SNR of kCHI & CHI clips to csv of human annotated audio clips.
 def snr_gold_labels(n_dimension_per_sec):
 
+    print('\nCalculating the SNR levels of human labelled data\n')
+
     # Load the human-to-label mapping
-    mapping = yaml.safe_load(open('/home/sdas/pyannote-vtc-testing/data/babytrain_mapping.yml'))['mapping']
+    mapping = yaml.safe_load(open('../../pyannote-vtc-testing/data/babytrain_mapping.yml'))['mapping']
     mapping['MOT']='FEM'
     mapping['FAT']='MAL'
 
-    write_file_kchi = csv.writer(open('gold-snr-kchi-labels.csv','w',newline = '\n'))
-    write_file_ochi = csv.writer(open('gold-snr-ochi-labels.csv','w',newline = '\n'))
+    write_file_kchi = csv.writer(open('SNR/gold-snr-kchi-labels.csv','w',newline = '\n'))
+    write_file_ochi = csv.writer(open('SNR/gold-snr-ochi-labels.csv','w',newline = '\n'))
+    write_file_mal = csv.writer(open('SNR/gold-snr-mal-labels.csv','w',newline = '\n'))
+    write_file_fem = csv.writer(open('SNR/gold-snr-fem-labels.csv','w',newline = '\n'))
 
     write_file_kchi.writerow(['Name', 'Gold label', 'Onset(s)', 'Duration(s)', 'Onset(dimension)', 'Offset(dimension)', 'No. of dimensions', 'Mean SNR'])
     write_file_ochi.writerow(['Name', 'Gold label', 'Onset(s)', 'Duration(s)', 'Onset(dimension)', 'Offset(dimension)', 'No. of dimensions', 'Mean SNR'])
+    write_file_mal.writerow(['Name', 'Gold label', 'Onset(s)', 'Duration(s)', 'Onset(dimension)', 'Offset(dimension)', 'No. of dimensions', 'Mean SNR'])
+    write_file_fem.writerow(['Name', 'Gold label', 'Onset(s)', 'Duration(s)', 'Onset(dimension)', 'Offset(dimension)', 'No. of dimensions', 'Mean SNR'])
 
 
     for file in glob.glob('/scratch2/mlavechin/VoiceTypeClassifierPaper/DATA/BabyTrain_full_resplitted2/test/*.test.rttm')[:-1]:
@@ -91,13 +109,19 @@ def snr_gold_labels(n_dimension_per_sec):
             filename = line[1].split('/')[-1]
             onset = line[3]
             duration = line[4]
-
-            if label == 'KCHI':
+            print('Processing file:',filename)
+            if label == 'MAL':
                 onset_dim, offset_dim, n_dim, mean_snr = mean_SNR(filename , float(onset), float(duration), n_dimension_per_sec)
-                write_file_kchi.writerow([filename, f'{label}({annotation})', onset, duration, onset_dim, offset_dim, n_dim, mean_snr])
+                write_file_mal.writerow([filename, label, onset, duration, onset_dim, offset_dim, n_dim, mean_snr])
+            elif label == 'FEM':
+                onset_dim, offset_dim, n_dim, mean_snr = mean_SNR(filename , float(onset), float(duration), n_dimension_per_sec)
+                write_file_fem.writerow([filename, label, onset, duration, onset_dim, offset_dim, n_dim, mean_snr])
+            elif label == 'KCHI':
+                onset_dim, offset_dim, n_dim, mean_snr = mean_SNR(filename , float(onset), float(duration), n_dimension_per_sec)
+                write_file_kchi.writerow([filename, label, onset, duration, onset_dim, offset_dim, n_dim, mean_snr])
             elif label == 'CHI':
                 onset_dim, offset_dim, n_dim, mean_snr = mean_SNR(filename , float(onset), float(duration), n_dimension_per_sec)
-                write_file_ochi.writerow([filename, f'{label}({annotation})', onset, duration, onset_dim, offset_dim, n_dim, mean_snr])
+                write_file_ochi.writerow([filename, label, onset, duration, onset_dim, offset_dim, n_dim, mean_snr])
 
 
 
@@ -107,7 +131,7 @@ if __name__ == '__main__':
     print(n_dimension_per_sec)
 
     # remove any preexisting files to prevent contamination
-    os.system('rm -r /home/sdas/brouhaha-vad/analysis/*snr*.csv')
+    os.system('rm -r SNR/*snr*.csv')
 
     snr_vtc_labels(n_dimension_per_sec)
     snr_gold_labels(n_dimension_per_sec)
